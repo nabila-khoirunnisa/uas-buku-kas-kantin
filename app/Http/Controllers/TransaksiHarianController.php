@@ -9,8 +9,8 @@ class TransaksiHarianController extends Controller
 {
     public function index()
     {
-        $transaksis = TransaksiHarian::orderBy('tanggal_transaksi', 'asc')->paginate(10);
-        return view('transaksi.index', compact('transaksis'));
+        $transaksi = TransaksiHarian::orderBy('tanggal_transaksi', 'asc')->paginate(15);
+        return view('transaksi.index', compact('transaksi'));
     }
 
     public function create()
