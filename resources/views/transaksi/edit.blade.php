@@ -29,10 +29,16 @@
 
     <div class="mb-3">
         <label>Nama Kios</label>
-        <input type="text"
-               name="nama_kios"
-               class="form-control"
-               value="{{ old('nama_kios', $transaksi->nama_kios) }}">
+        <select name="kios_id" class="form-control">
+
+    @foreach($kios as $item)
+        <option value="{{ $item->id }}"
+            {{ $transaksi->kios_id == $item->id ? 'selected' : '' }}>
+            {{ $item->nama_kios }}
+        </option>
+    @endforeach
+
+</select>
     </div>
 
     <div class="mb-3">

@@ -32,7 +32,7 @@
         <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ $item->tanggal_transaksi }}</td>
-            <td>{{ $item->nama_kios }}</td>
+            <td>{{ $item->kios->nama_kios ?? '-' }}</td>
             <td>Rp {{ number_format($item->total_pemasukan) }}</td>
             <td>Rp {{ number_format($item->total_pengeluaran) }}</td>
             <td>{{ $item->keterangan }}</td>
