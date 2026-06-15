@@ -14,7 +14,7 @@
     </div>
 @endif
 
-<form action="{{ route('transaksi.update', $transaksi->id) }}" method="POST">
+<form action="{{ route('transaksi.update', $transaksi->id) }}" method="POST" enctype="multipart/form-data">
 
     @csrf
     @method('PUT')
@@ -31,14 +31,14 @@
         <label>Nama Kios</label>
         <select name="kios_id" class="form-control">
 
-    @foreach($kios as $item)
-        <option value="{{ $item->id }}"
-            {{ $transaksi->kios_id == $item->id ? 'selected' : '' }}>
-            {{ $item->nama_kios }}
-        </option>
-    @endforeach
+            @foreach($kios as $item)
+                <option value="{{ $item->id }}"
+                    {{ $transaksi->kios_id == $item->id ? 'selected' : '' }}>
+                    {{ $item->nama_kios }}
+                </option>
+            @endforeach
 
-</select>
+        </select>
     </div>
 
     <div class="mb-3">
@@ -63,13 +63,29 @@
                   class="form-control">{{ old('keterangan', $transaksi->keterangan) }}</textarea>
     </div>
 
+    @if($transaksi->bukti)
+    <div class="mb-3">
+        <label>Nota Saat Ini</label><br>
+        @if(str_ends_with($transaksi->bukti, '.pdf'))
+            <a href="{{ asset('storage/' . $transaksi->bukti) }}" target="_blank" class="btn btn-sm btn-info">Lihat PDF</a>
+        @else
+            <br>
+            <img src="{{ asset('storage/' . $transaksi->bukti) }}" width="150" class="img-thumbnail">
+        @endif
+    </div>
+    @endif
+
+    <div class="mb-3">
+        <label>Ganti Bukti (PDF / JPG / PNG)</label>
+        <input type="file" name="bukti" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+    </div>
+
     <button type="submit" class="btn btn-primary">
         Update
     </button>
 
-    <a href="{{ route('transaksi.index') }}"
-       class="btn btn-secondary">
-       Kembali
+    <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">
+        Kembali
     </a>
 
 </form>

@@ -17,6 +17,7 @@ class TransaksiHarian extends Model
     'total_pemasukan',
     'total_pengeluaran',
     'keterangan',
+    'bukti',
 ];
 public function kios()
 {

@@ -23,6 +23,7 @@
             <th>Pemasukan</th>
             <th>Pengeluaran</th>
             <th>Catatan</th>
+            <th>Nota</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -36,6 +37,16 @@
             <td>Rp {{ number_format($item->total_pemasukan) }}</td>
             <td>Rp {{ number_format($item->total_pengeluaran) }}</td>
             <td>{{ $item->keterangan }}</td>
+
+            <td>
+                @if($item->bukti)
+                    <a href="{{ asset('storage/' . $item->bukti) }}" target="_blank" class="btn btn-info btn-sm">
+                        Lihat
+                    </a>
+                @else
+                    -
+                @endif
+            </td>
 
             <td>
                 <a href="{{ route('transaksi.edit', $item->id) }}"

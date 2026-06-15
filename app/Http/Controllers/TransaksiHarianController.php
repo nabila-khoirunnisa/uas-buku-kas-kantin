@@ -5,17 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Kios;
 use App\Models\TransaksiHarian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TransaksiHarianController extends Controller
 {
     public function index()
-{
-    $transaksi = TransaksiHarian::with('kios')
-        ->orderBy('tanggal_transaksi', 'asc')
-        ->paginate(15);
+    {
+        $transaksi = TransaksiHarian::with('kios')
+            ->orderBy('tanggal_transaksi', 'asc')
+            ->paginate(15);
 
-    return view('transaksi.index', compact('transaksi'));
-}
+        return view('transaksi.index', compact('transaksi'));
+    }
 
     public function create()
     {
@@ -32,28 +33,35 @@ class TransaksiHarianController extends Controller
             'total_pemasukan'   => 'required|numeric|min:0',
             'total_pengeluaran' => 'required|numeric|min:0',
             'keterangan'        => 'nullable|string',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         $kios = Kios::find($request->kios_id);
 
-TransaksiHarian::create([
-    'tanggal_transaksi' => $request->tanggal_transaksi,
-    'kios_id' => $request->kios_id,
-    'total_pemasukan' => $request->total_pemasukan,
-    'total_pengeluaran' => $request->total_pengeluaran,
-    'keterangan' => $request->keterangan,
-]);
+        $bukti = null;
+        if ($request->hasFile('bukti')) {
+            $bukti = $request->file('bukti')->store('bukti_transaksi', 'public');
+        }
+
+        TransaksiHarian::create([
+            'tanggal_transaksi' => $request->tanggal_transaksi,
+            'kios_id' => $request->kios_id,
+            'total_pemasukan' => $request->total_pemasukan,
+            'total_pengeluaran' => $request->total_pengeluaran,
+            'keterangan' => $request->keterangan,
+            'bukti' => $bukti,
+        ]);
 
         return redirect()->route('transaksi.index')
             ->with('success', 'Data transaksi berhasil ditambahkan!');
     }
 
     public function edit(TransaksiHarian $transaksi)
-{
-    $kios = Kios::all();
+    {
+        $kios = Kios::all();
 
-    return view('transaksi.edit', compact('transaksi', 'kios'));
-}
+        return view('transaksi.edit', compact('transaksi', 'kios'));
+    }
 
     public function update(Request $request, TransaksiHarian $transaksi)
     {
@@ -63,17 +71,27 @@ TransaksiHarian::create([
             'total_pemasukan'   => 'required|numeric|min:0',
             'total_pengeluaran' => 'required|numeric|min:0',
             'keterangan'        => 'nullable|string',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         $kios = Kios::find($request->kios_id);
 
-$transaksi->update([
-    'tanggal_transaksi' => $request->tanggal_transaksi,
-    'kios_id' => $request->kios_id,
-    'total_pemasukan' => $request->total_pemasukan,
-    'total_pengeluaran' => $request->total_pengeluaran,
-    'keterangan' => $request->keterangan,
-]);
+        $bukti = $transaksi->bukti;
+        if ($request->hasFile('bukti')) {
+            if ($transaksi->bukti) {
+                Storage::disk('public')->delete($transaksi->bukti);
+            }
+            $bukti = $request->file('bukti')->store('bukti_transaksi', 'public');
+        }
+
+        $transaksi->update([
+            'tanggal_transaksi' => $request->tanggal_transaksi,
+            'kios_id' => $request->kios_id,
+            'total_pemasukan' => $request->total_pemasukan,
+            'total_pengeluaran' => $request->total_pengeluaran,
+            'keterangan' => $request->keterangan,
+            'bukti' => $bukti,
+        ]);
 
         return redirect()->route('transaksi.index')
             ->with('success', 'Data transaksi berhasil diperbarui!');
@@ -81,6 +99,10 @@ $transaksi->update([
 
     public function destroy(TransaksiHarian $transaksi)
     {
+        if ($transaksi->bukti) {
+            Storage::disk('public')->delete($transaksi->bukti);
+        }
+
         $transaksi->delete();
 
         return redirect()->route('transaksi.index')

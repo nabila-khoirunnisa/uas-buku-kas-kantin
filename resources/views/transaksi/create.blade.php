@@ -14,7 +14,7 @@
     </div>
 @endif
 
-<form action="{{ route('transaksi.store') }}" method="POST">
+<form action="{{ route('transaksi.store') }}" method="POST" enctype="multipart/form-data">
 
     @csrf
 
@@ -59,6 +59,11 @@
         <label>Keterangan</label>
         <textarea name="keterangan"
                   class="form-control">{{ old('keterangan') }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Bukti / Nota (PDF / JPG / PNG)</label>
+        <input type="file" name="bukti" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
     </div>
 
     <button type="submit" class="btn btn-success">
