@@ -14,7 +14,7 @@
 </div>
 @endif
 
-<form action="{{ route('kios.update', $kios->id) }}" method="POST">
+<form action="{{ route('kios.update', $kios->getKey()) }}" method="POST">
 
     @csrf
     @method('PUT')

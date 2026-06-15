@@ -16,17 +16,17 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @if(auth()->user()->role === 'admin')
+                    <x-nav-link :href="route('kios.index')" :active="request()->routeIs('kios.*')">
+    Data Kios
+</x-nav-link>
 
-                        <x-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
-                            Transaksi
-                        </x-nav-link>
+@if(auth()->user()->role === 'admin')
 
-                        <x-nav-link :href="route('kios.index')" :active="request()->routeIs('kios.*')">
-                            Data Kios
-                        </x-nav-link>
+    <x-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
+        Transaksi
+    </x-nav-link>
 
-                    @endif
+@endif
                 </div>
             </div>
 
@@ -84,17 +84,17 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @if(auth()->user()->role === 'admin')
+            <x-responsive-nav-link :href="route('kios.index')" :active="request()->routeIs('kios.*')">
+    Data Kios
+</x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
-                    Transaksi
-                </x-responsive-nav-link>
+@if(auth()->user()->role === 'admin')
 
-                <x-responsive-nav-link :href="route('kios.index')" :active="request()->routeIs('kios.*')">
-                    Data Kios
-                </x-responsive-nav-link>
+    <x-responsive-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
+        Transaksi
+    </x-responsive-nav-link>
 
-            @endif
+@endif
         </div>
 
         <!-- Responsive Settings Options -->

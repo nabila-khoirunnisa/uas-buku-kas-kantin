@@ -45,9 +45,9 @@
                     Edit
                 </a>
 
-                <form action="{{ route('kios.destroy', $item->id) }}"
-                      method="POST"
-                      class="d-inline">
+                <form action="{{ route('kios.destroy', ['kio' => $item->id]) }}"
+      method="POST"
+      class="d-inline">
 
                     @csrf
                     @method('DELETE')
