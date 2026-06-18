@@ -11,10 +11,12 @@ return new class extends Migration
         Schema::create('transaksi_harians', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal_transaksi');
-            $table->string('nama_kios');
-            $table->bigInteger('total_pemasukan');
-            $table->bigInteger('total_pengeluaran');
-            $table->text('keterangan')->nullable();
+            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
+            $table->decimal('harga_pokok', 10, 2);
+            $table->decimal('harga_jual', 10, 2);
+            $table->integer('jumlah');
+            $table->decimal('total', 10, 2);
+            $table->string('bukti')->nullable();
             $table->timestamps();
         });
     }

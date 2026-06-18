@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kios;
+use App\Models\Produk;
 use App\Models\TransaksiHarian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,8 +11,8 @@ class TransaksiHarianController extends Controller
 {
     public function index()
     {
-        $transaksi = TransaksiHarian::with('kios')
-            ->orderBy('tanggal_transaksi', 'asc')
+        $transaksi = TransaksiHarian::with('produk')
+            ->orderBy('tanggal_transaksi', 'desc')
             ->paginate(15);
 
         return view('transaksi.index', compact('transaksi'));
@@ -20,23 +20,21 @@ class TransaksiHarianController extends Controller
 
     public function create()
     {
-        $kios = Kios::all();
-        
-        return view('transaksi.create', compact('kios'));
+        $produk = Produk::orderBy('nama_produk')->get();
+        return view('transaksi.create', compact('produk'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'tanggal_transaksi' => 'required|date',
-            'kios_id' => 'required|exists:kios,id',
-            'total_pemasukan'   => 'required|numeric|min:0',
-            'total_pengeluaran' => 'required|numeric|min:0',
-            'keterangan'        => 'nullable|string',
-            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'produk_id'         => 'required|exists:produks,id',
+            'jumlah'            => 'required|integer|min:1',
+            'bukti'             => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $kios = Kios::find($request->kios_id);
+        $produk = Produk::find($request->produk_id);
+        $total = $produk->harga_jual * $request->jumlah;
 
         $bukti = null;
         if ($request->hasFile('bukti')) {
@@ -45,11 +43,12 @@ class TransaksiHarianController extends Controller
 
         TransaksiHarian::create([
             'tanggal_transaksi' => $request->tanggal_transaksi,
-            'kios_id' => $request->kios_id,
-            'total_pemasukan' => $request->total_pemasukan,
-            'total_pengeluaran' => $request->total_pengeluaran,
-            'keterangan' => $request->keterangan,
-            'bukti' => $bukti,
+            'produk_id'         => $request->produk_id,
+            'harga_pokok'       => $produk->harga_pokok,
+            'harga_jual'        => $produk->harga_jual,
+            'jumlah'            => $request->jumlah,
+            'total'             => $total,
+            'bukti'             => $bukti,
         ]);
 
         return redirect()->route('transaksi.index')
@@ -58,23 +57,21 @@ class TransaksiHarianController extends Controller
 
     public function edit(TransaksiHarian $transaksi)
     {
-        $kios = Kios::all();
-
-        return view('transaksi.edit', compact('transaksi', 'kios'));
+        $produk = Produk::orderBy('nama_produk')->get();
+        return view('transaksi.edit', compact('transaksi', 'produk'));
     }
 
     public function update(Request $request, TransaksiHarian $transaksi)
     {
         $request->validate([
             'tanggal_transaksi' => 'required|date',
-            'kios_id' => 'required|exists:kios,id',
-            'total_pemasukan'   => 'required|numeric|min:0',
-            'total_pengeluaran' => 'required|numeric|min:0',
-            'keterangan'        => 'nullable|string',
-            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'produk_id'         => 'required|exists:produks,id',
+            'jumlah'            => 'required|integer|min:1',
+            'bukti'             => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $kios = Kios::find($request->kios_id);
+        $produk = Produk::find($request->produk_id);
+        $total = $produk->harga_jual * $request->jumlah;
 
         $bukti = $transaksi->bukti;
         if ($request->hasFile('bukti')) {
@@ -86,11 +83,12 @@ class TransaksiHarianController extends Controller
 
         $transaksi->update([
             'tanggal_transaksi' => $request->tanggal_transaksi,
-            'kios_id' => $request->kios_id,
-            'total_pemasukan' => $request->total_pemasukan,
-            'total_pengeluaran' => $request->total_pengeluaran,
-            'keterangan' => $request->keterangan,
-            'bukti' => $bukti,
+            'produk_id'         => $request->produk_id,
+            'harga_pokok'       => $produk->harga_pokok,
+            'harga_jual'        => $produk->harga_jual,
+            'jumlah'            => $request->jumlah,
+            'total'             => $total,
+            'bukti'             => $bukti,
         ]);
 
         return redirect()->route('transaksi.index')
