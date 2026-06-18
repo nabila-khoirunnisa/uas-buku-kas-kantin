@@ -34,7 +34,7 @@
                         <th>Jumlah</th>
                         <th>Total</th>
                         <th>Nota</th>
-                        <th>Aksi</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,24 +58,14 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('transaksi.edit', $item->id) }}"
-                               class="btn btn-sm btn-warning">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="{{ route('transaksi.destroy', $item->id) }}"
-                                  method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Yakin hapus data ini?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
+    <span class="badge bg-success">
+        Tersimpan
+    </span>
+</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             <i class="bi bi-inbox" style="font-size:2rem;"></i><br>
                             Belum ada data transaksi
                         </td>

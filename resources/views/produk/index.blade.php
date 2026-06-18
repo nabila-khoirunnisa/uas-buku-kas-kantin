@@ -6,7 +6,11 @@
 
 <h2 class="mb-4">Kelola Produk</h2>
 
-<a href="{{ route('produk.create') }}" class="btn btn-primary mb-3">Tambah Produk</a>
+@if(auth()->user()->role === 'admin')
+    <a href="{{ route('produk.create') }}" class="btn btn-primary mb-3">
+        Tambah Produk
+    </a>
+@endif
 
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -20,7 +24,9 @@
             <th>Harga Pokok</th>
             <th>Harga Jual</th>
             <th>Stok/Hari</th>
-            <th>Aksi</th>
+            @if(auth()->user()->role === 'admin')
+    <th>Aksi</th>
+@endif
         </tr>
     </thead>
     <tbody>
@@ -31,15 +37,22 @@
             <td>Rp {{ number_format($item->harga_pokok) }}</td>
             <td>Rp {{ number_format($item->harga_jual) }}</td>
             <td>{{ $item->stok_perhari }}</td>
-            <td>
-                <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ route('produk.destroy', $item->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Yakin hapus produk ini?')">Hapus</button>
-                </form>
-            </td>
+            @if(auth()->user()->role === 'admin')
+<td>
+    <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-warning btn-sm">
+        Edit
+    </a>
+
+    <form action="{{ route('produk.destroy', $item->id) }}" method="POST" class="d-inline">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-danger btn-sm"
+                onclick="return confirm('Yakin hapus produk ini?')">
+            Hapus
+        </button>
+    </form>
+</td>
+@endif
         </tr>
         @endforeach
     </tbody>

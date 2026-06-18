@@ -176,19 +176,22 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
 
-                @if(auth()->user()->role === 'admin')
-                    <div class="nav-section">Admin</div>
+                <div class="nav-section">Menu</div>
 
-                    <a href="{{ route('produk.index') }}"
-                       class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}">
-                        <i class="bi bi-box-seam"></i> Produk
-                    </a>
+@if(auth()->user()->role === 'admin')
+    <div class="nav-section">Admin</div>
 
-                    <a href="{{ route('transaksi.index') }}"
-                       class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
-                        <i class="bi bi-receipt"></i> Transaksi
-                    </a>
-                @endif
+    <a href="{{ route('produk.index') }}"
+       class="nav-link {{ request()->routeIs('produk.*') ? 'active' : '' }}">
+        <i class="bi bi-box-seam"></i> Produk
+    </a>
+@endif
+
+
+<a href="{{ route('transaksi.index') }}"
+   class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+    <i class="bi bi-receipt"></i> Transaksi
+</a>
 
                 <div class="nav-section">Akun</div>
 

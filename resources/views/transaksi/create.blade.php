@@ -50,18 +50,11 @@
                 </select>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-semibold">Harga Pokok</label>
-                    <input type="text" id="harga_pokok" class="form-control" readonly
-                           placeholder="Otomatis dari produk">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-semibold">Harga Jual</label>
-                    <input type="text" id="harga_jual" class="form-control" readonly
-                           placeholder="Otomatis dari produk">
-                </div>
-            </div>
+            <div class="mb-3">
+    <label class="form-label fw-semibold">Harga Jual</label>
+    <input type="text" id="harga_jual" class="form-control" readonly
+           placeholder="Otomatis dari produk">
+</div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Jumlah</label>
@@ -91,11 +84,8 @@
 <script>
 function updateHarga(select) {
     const option = select.options[select.selectedIndex];
-    const hargaPokok = option.dataset.hargaPokok || '';
     const hargaJual = option.dataset.hargaJual || '';
 
-    document.getElementById('harga_pokok').value = hargaPokok
-        ? 'Rp ' + parseInt(hargaPokok).toLocaleString('id-ID') : '';
     document.getElementById('harga_jual').value = hargaJual
         ? 'Rp ' + parseInt(hargaJual).toLocaleString('id-ID') : '';
 

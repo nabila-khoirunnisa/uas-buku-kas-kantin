@@ -11,21 +11,32 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
 
-    // Kios - semua user bisa lihat index
-    Route::resource('kios', KiosController::class)->only(['index']);
+    // Semua user bisa lihat kios
+    Route::resource('kios', KiosController::class)
+        ->only(['index']);
+
+    // Semua user bisa lihat produk
+    Route::resource('produk', ProdukController::class)
+        ->only(['index']);
+
+    // Kasir & Admin bisa tambah transaksi
+    Route::resource('transaksi', TransaksiHarianController::class)
+        ->only(['index', 'create', 'store']);
 
     // Khusus admin
     Route::middleware('admin')->group(function () {
-        Route::resource('transaksi', TransaksiHarianController::class);
-        Route::resource('kios', KiosController::class)->except(['index']);
-        Route::resource('produk', ProdukController::class);
+
+        Route::resource('kios', KiosController::class)
+            ->except(['index']);
+
+        Route::resource('produk', ProdukController::class)
+            ->except(['index']);
     });
 
     // Profile

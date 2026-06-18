@@ -21,14 +21,14 @@
                     </x-nav-link>
 
                     @if(auth()->user()->role === 'admin')
-                        <x-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
-                            Transaksi
-                        </x-nav-link>
+    <x-nav-link :href="route('produk.index')" :active="request()->routeIs('produk.*')">
+        Produk
+    </x-nav-link>
+@endif
 
-                        <x-nav-link :href="route('produk.index')" :active="request()->routeIs('produk.*')">
-                            Produk
-                        </x-nav-link>
-                    @endif
+<x-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
+    Transaksi
+</x-nav-link>
                 </div>
             </div>
 
@@ -88,15 +88,15 @@
                 Data Kios
             </x-responsive-nav-link>
 
-            @if(auth()->user()->role === 'admin')
-                <x-responsive-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
-                    Transaksi
-                </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('transaksi.index')" :active="request()->routeIs('transaksi.*')">
+    Transaksi
+</x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('produk.index')" :active="request()->routeIs('produk.*')">
-                    Produk
-                </x-responsive-nav-link>
-            @endif
+@if(auth()->user()->role === 'admin')
+    <x-responsive-nav-link :href="route('produk.index')" :active="request()->routeIs('produk.*')">
+        Produk
+    </x-responsive-nav-link>
+@endif
         </div>
 
         <!-- Responsive Settings Options -->

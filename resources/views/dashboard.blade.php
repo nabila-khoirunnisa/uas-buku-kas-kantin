@@ -125,6 +125,49 @@
 
 @else
 
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center py-3"
+         style="background-color:#0d6efd; border-radius:12px 12px 0 0;">
+        <span class="text-white fw-semibold">
+            <i class="bi bi-box-seam me-2"></i>Daftar Produk Kantin
+        </span>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Produk</th>
+                        <th>Harga Jual</th>
+                        <th>Stok / Hari</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($produk as $item)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $item->nama_produk }}</td>
+                        <td class="text-success fw-semibold">
+                            Rp {{ number_format($item->harga_jual) }}
+                        </td>
+                        <td>{{ $item->stok_perhari }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            Belum ada produk
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
 @endif
 
 @endsection
