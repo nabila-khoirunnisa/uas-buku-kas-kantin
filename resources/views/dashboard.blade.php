@@ -102,22 +102,44 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse(\App\Models\TransaksiHarian::with('produk')->latest()->take(5)->get() as $item)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d M Y') }}</td>
-                        <td>{{ $item->produk->nama_produk ?? '-' }}</td>
-                        <td class="text-success fw-semibold">Rp {{ number_format($item->harga_jual) }}</td>
-                        <td>{{ $item->jumlah }}</td>
-                        <td class="fw-bold">Rp {{ number_format($item->total) }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox" style="font-size:2rem;"></i><br>Belum ada transaksi
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
+@forelse(\App\Models\TransaksiHarian::with('detailTransaksis.produk')->latest()->take(5)->get() as $item)
+<tr>
+
+    <td>
+        {{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d M Y') }}
+    </td>
+
+    <td>
+        @foreach($item->detailTransaksis as $detail)
+            {{ $detail->produk->nama_produk ?? '-' }}<br>
+        @endforeach
+    </td>
+
+    <td>
+        @foreach($item->detailTransaksis as $detail)
+            Rp {{ number_format($detail->harga_jual) }}<br>
+        @endforeach
+    </td>
+
+    <td>
+        @foreach($item->detailTransaksis as $detail)
+            {{ $detail->jumlah }}<br>
+        @endforeach
+    </td>
+
+    <td class="fw-bold">
+        Rp {{ number_format($item->total) }}
+    </td>
+
+</tr>
+@empty
+<tr>
+    <td colspan="5" class="text-center text-muted py-4">
+        Belum ada transaksi
+    </td>
+</tr>
+@endforelse
+</tbody>
             </table>
         </div>
     </div>

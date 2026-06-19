@@ -1,107 +1,95 @@
 @extends('layouts.app')
 
-@section('page-title', 'Tambah Transaksi')
-
 @section('content')
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0" style="color:#1a5c38;">
-        <i class="bi bi-plus-circle me-2"></i>Tambah Transaksi
-    </h5>
-    <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Kembali
-    </a>
-</div>
+<h2 class="mb-4">Tambah Transaksi Harian</h2>
 
-@if($errors->any())
+@if ($errors->any())
     <div class="alert alert-danger">
         <ul class="mb-0">
-            @foreach($errors->all() as $error)
+            @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
         </ul>
     </div>
 @endif
 
-<div class="card">
-    <div class="card-body">
-        <form action="{{ route('transaksi.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+<form action="{{ route('transaksi.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Tanggal Transaksi</label>
-                <input type="date" name="tanggal_transaksi" class="form-control"
-                       value="{{ old('tanggal_transaksi') }}">
-            </div>
+    <div class="mb-3">
+        <label>Tanggal Transaksi</label>
+        <input type="date" name="tanggal_transaksi" class="form-control" required>
+    </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Produk</label>
-                <select name="produk_id" class="form-control" id="produkSelect"
-                        onchange="updateHarga(this)">
-                    <option value="">Pilih Produk</option>
-                    @foreach($produk as $item)
-                        <option value="{{ $item->id }}"
-                                data-harga-pokok="{{ $item->harga_pokok }}"
-                                data-harga-jual="{{ $item->harga_jual }}"
-                                {{ old('produk_id') == $item->id ? 'selected' : '' }}>
-                            {{ $item->nama_produk }}
+    <div class="mb-3">
+        <label>Bukti (opsional)</label>
+        <input type="file" name="bukti" class="form-control">
+    </div>
+
+    <hr>
+
+    <h5>Detail Produk</h5>
+
+    <div id="produk-wrapper">
+
+        <div class="row mb-2 produk-item">
+            <div class="col-md-6">
+                <select name="produk_id[]" class="form-control" required>
+                    <option value="">-- Pilih Produk --</option>
+                    @foreach ($produk as $p)
+                        <option value="{{ $p->id }}">
+                            {{ $p->nama_produk }} - Rp {{ number_format($p->harga_jual) }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
-            <div class="mb-3">
-    <label class="form-label fw-semibold">Harga Jual</label>
-    <input type="text" id="harga_jual" class="form-control" readonly
-           placeholder="Otomatis dari produk">
-</div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Jumlah</label>
-                <input type="number" name="jumlah" class="form-control" min="1"
-                       value="{{ old('jumlah') }}" onchange="updateTotal()" oninput="updateTotal()">
+            <div class="col-md-4">
+                <input type="number" name="jumlah[]" class="form-control" placeholder="Jumlah" min="1" required>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Total</label>
-                <input type="text" id="total_display" class="form-control" readonly
-                       placeholder="Otomatis dihitung">
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger remove-item">Hapus</button>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Nota / Bukti</label>
-                <input type="file" name="bukti" class="form-control"
-                       accept=".jpg,.jpeg,.png,.pdf">
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save me-1"></i> Simpan
-            </button>
-        </form>
     </div>
-</div>
+
+    <button type="button" class="btn btn-secondary mb-3" id="add-item">
+        + Tambah Produk
+    </button>
+
+    <br>
+
+    <button type="submit" class="btn btn-primary">
+        Simpan Transaksi
+    </button>
+
+</form>
 
 <script>
-function updateHarga(select) {
-    const option = select.options[select.selectedIndex];
-    const hargaJual = option.dataset.hargaJual || '';
+document.getElementById('add-item').addEventListener('click', function () {
+    let wrapper = document.getElementById('produk-wrapper');
 
-    document.getElementById('harga_jual').value = hargaJual
-        ? 'Rp ' + parseInt(hargaJual).toLocaleString('id-ID') : '';
+    let newItem = document.querySelector('.produk-item').cloneNode(true);
 
-    updateTotal();
-}
+    // reset value
+    newItem.querySelector('select').value = '';
+    newItem.querySelector('input').value = '';
 
-function updateTotal() {
-    const select = document.getElementById('produkSelect');
-    const option = select.options[select.selectedIndex];
-    const hargaJual = parseFloat(option.dataset.hargaJual) || 0;
-    const jumlah = parseInt(document.querySelector('[name=jumlah]').value) || 0;
-    const total = hargaJual * jumlah;
+    wrapper.appendChild(newItem);
+});
 
-    document.getElementById('total_display').value = total
-        ? 'Rp ' + total.toLocaleString('id-ID') : '';
-}
+// hapus item
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-item')) {
+        let items = document.querySelectorAll('.produk-item');
+        if (items.length > 1) {
+            e.target.closest('.produk-item').remove();
+        }
+    }
+});
 </script>
 
 @endsection

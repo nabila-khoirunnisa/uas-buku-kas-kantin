@@ -11,7 +11,7 @@ class TransaksiHarianController extends Controller
 {
     public function index()
     {
-        $transaksi = TransaksiHarian::with('produk')
+        $transaksi = TransaksiHarian::with('detailTransaksis.produk')
             ->orderBy('tanggal_transaksi', 'desc')
             ->paginate(15);
 
@@ -28,28 +28,45 @@ class TransaksiHarianController extends Controller
     {
         $request->validate([
             'tanggal_transaksi' => 'required|date',
-            'produk_id'         => 'required|exists:produks,id',
-            'jumlah'            => 'required|integer|min:1',
-            'bukti'             => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'produk_id' => 'required|array',
+            'produk_id.*' => 'exists:produks,id',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'integer|min:1',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $produk = Produk::find($request->produk_id);
-        $total = $produk->harga_jual * $request->jumlah;
-
+        // upload bukti
         $bukti = null;
         if ($request->hasFile('bukti')) {
             $bukti = $request->file('bukti')->store('bukti_transaksi', 'public');
         }
 
-        TransaksiHarian::create([
+        // hitung total transaksi
+        $total = 0;
+
+        foreach ($request->produk_id as $i => $produk_id) {
+            $produk = Produk::find($produk_id);
+            $total += $produk->harga_jual * $request->jumlah[$i];
+        }
+
+        // simpan transaksi utama
+        $transaksi = TransaksiHarian::create([
             'tanggal_transaksi' => $request->tanggal_transaksi,
-            'produk_id'         => $request->produk_id,
-            'harga_pokok'       => $produk->harga_pokok,
-            'harga_jual'        => $produk->harga_jual,
-            'jumlah'            => $request->jumlah,
-            'total'             => $total,
-            'bukti'             => $bukti,
+            'total' => $total,
+            'bukti' => $bukti,
         ]);
+
+        // simpan detail transaksi
+        foreach ($request->produk_id as $i => $produk_id) {
+            $produk = Produk::find($produk_id);
+
+            $transaksi->detailTransaksis()->create([
+                'produk_id' => $produk_id,
+                'jumlah' => $request->jumlah[$i],
+                'harga_jual' => $produk->harga_jual,
+                'subtotal' => $produk->harga_jual * $request->jumlah[$i],
+            ]);
+        }
 
         return redirect()->route('transaksi.index')
             ->with('success', 'Data transaksi berhasil ditambahkan!');
@@ -58,6 +75,8 @@ class TransaksiHarianController extends Controller
     public function edit(TransaksiHarian $transaksi)
     {
         $produk = Produk::orderBy('nama_produk')->get();
+        $transaksi->load('detailTransaksis');
+
         return view('transaksi.edit', compact('transaksi', 'produk'));
     }
 
@@ -65,14 +84,14 @@ class TransaksiHarianController extends Controller
     {
         $request->validate([
             'tanggal_transaksi' => 'required|date',
-            'produk_id'         => 'required|exists:produks,id',
-            'jumlah'            => 'required|integer|min:1',
-            'bukti'             => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'produk_id' => 'required|array',
+            'produk_id.*' => 'exists:produks,id',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'integer|min:1',
+            'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $produk = Produk::find($request->produk_id);
-        $total = $produk->harga_jual * $request->jumlah;
-
+        // update bukti
         $bukti = $transaksi->bukti;
         if ($request->hasFile('bukti')) {
             if ($transaksi->bukti) {
@@ -81,15 +100,34 @@ class TransaksiHarianController extends Controller
             $bukti = $request->file('bukti')->store('bukti_transaksi', 'public');
         }
 
+        // hitung ulang total
+        $total = 0;
+        foreach ($request->produk_id as $i => $produk_id) {
+            $produk = Produk::find($produk_id);
+            $total += $produk->harga_jual * $request->jumlah[$i];
+        }
+
+        // update transaksi utama
         $transaksi->update([
             'tanggal_transaksi' => $request->tanggal_transaksi,
-            'produk_id'         => $request->produk_id,
-            'harga_pokok'       => $produk->harga_pokok,
-            'harga_jual'        => $produk->harga_jual,
-            'jumlah'            => $request->jumlah,
-            'total'             => $total,
-            'bukti'             => $bukti,
+            'total' => $total,
+            'bukti' => $bukti,
         ]);
+
+        // hapus detail lama
+        $transaksi->detailTransaksis()->delete();
+
+        // insert ulang detail
+        foreach ($request->produk_id as $i => $produk_id) {
+            $produk = Produk::find($produk_id);
+
+            $transaksi->detailTransaksis()->create([
+                'produk_id' => $produk_id,
+                'jumlah' => $request->jumlah[$i],
+                'harga_jual' => $produk->harga_jual,
+                'subtotal' => $produk->harga_jual * $request->jumlah[$i],
+            ]);
+        }
 
         return redirect()->route('transaksi.index')
             ->with('success', 'Data transaksi berhasil diperbarui!');
@@ -101,6 +139,7 @@ class TransaksiHarianController extends Controller
             Storage::disk('public')->delete($transaksi->bukti);
         }
 
+        $transaksi->detailTransaksis()->delete();
         $transaksi->delete();
 
         return redirect()->route('transaksi.index')

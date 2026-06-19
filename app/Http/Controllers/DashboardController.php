@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TransaksiHarian;
 use App\Models\Produk;
+use App\Models\DetailTransaksi;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -11,21 +12,30 @@ class DashboardController extends Controller
     public function index()
     {
         $jumlah_transaksi = TransaksiHarian::count();
+
         $pendapatan = TransaksiHarian::sum('total');
-        $hpp = TransaksiHarian::selectRaw('SUM(harga_pokok * jumlah) as total_hpp')
-                    ->value('total_hpp') ?? 0;
+
+        $hpp = 0;
+
+        $detailTransaksi = DetailTransaksi::with('produk')->get();
+
+        foreach ($detailTransaksi as $detail) {
+            if ($detail->produk) {
+                $hpp += $detail->produk->harga_pokok * $detail->jumlah;
+            }
+        }
 
         $kas = $pendapatan;
         $laba = $pendapatan - $hpp;
         $keuntungan = $laba;
 
-        // ambil data produk
         $produk = Produk::orderBy('nama_produk')->get();
 
         return view('dashboard', compact(
             'kas',
             'jumlah_transaksi',
             'pendapatan',
+            'hpp',
             'laba',
             'keuntungan',
             'produk'

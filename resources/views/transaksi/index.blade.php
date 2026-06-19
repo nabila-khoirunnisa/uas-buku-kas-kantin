@@ -1,85 +1,90 @@
 @extends('layouts.app')
 
-@section('page-title', 'Data Transaksi')
-
 @section('content')
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0" style="color:#1a5c38;">
-        <i class="bi bi-receipt me-2"></i>Data Transaksi Kantin
-    </h5>
-    <a href="{{ route('transaksi.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> Tambah Transaksi
-    </a>
-</div>
+<h2 class="mb-4">Data Transaksi Harian</h2>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show">
-        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<a href="{{ route('transaksi.create') }}" class="btn btn-primary mb-3">
+    + Tambah Transaksi
+</a>
+
+@if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
     </div>
 @endif
 
-<div class="card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Tanggal</th>
-                        <th>Produk</th>
-                        <th>Harga Pokok</th>
-                        <th>Harga Jual</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
-                        <th>Nota</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($transaksi as $item)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d M Y') }}</td>
-                        <td class="fw-semibold">{{ $item->produk->nama_produk ?? '-' }}</td>
-                        <td class="text-danger">Rp {{ number_format($item->harga_pokok) }}</td>
-                        <td class="text-success">Rp {{ number_format($item->harga_jual) }}</td>
-                        <td>{{ $item->jumlah }}</td>
-                        <td class="fw-bold">Rp {{ number_format($item->total) }}</td>
-                        <td>
-                            @if($item->bukti)
-                                <a href="{{ asset('storage/' . $item->bukti) }}" target="_blank"
-                                   class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-file-earmark"></i> Lihat
-                                </a>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </td>
-                        <td>
-    <span class="badge bg-success">
-        Tersimpan
-    </span>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>No</th>
+<th>Tanggal</th>
+<th>Detail Produk</th>
+<th>Total</th>
+<th>Bukti</th>
+
+@if(auth()->user()->role === 'admin')
+    <th>Aksi</th>
+@endif
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach ($transaksi as $i => $t)
+        <tr>
+            <td>{{ $transaksi->firstItem() + $i }}</td>
+
+            <td>{{ $t->tanggal_transaksi }}</td>
+
+            <td>
+                @foreach ($t->detailTransaksis as $detail)
+                    • {{ $detail->produk->nama_produk }} 
+                    ({{ $detail->jumlah }} x {{ number_format($detail->harga_jual) }}) 
+                    = <b>{{ number_format($detail->subtotal) }}</b>
+                    <br>
+                @endforeach
+            </td>
+
+            <td>
+                <b>Rp {{ number_format($t->total) }}</b>
+            </td>
+
+            <td>
+                @if ($t->bukti)
+                    <a href="{{ asset('storage/'.$t->bukti) }}" target="_blank"
+   class="btn btn-success btn-sm">
+   📄 Lihat Bukti
+</a>
+                @else
+                    -
+                @endif
+            </td>
+
+            @if(auth()->user()->role === 'admin')
+<td>
+    <form action="{{ route('transaksi.destroy', $t->id) }}"
+          method="POST"
+          class="d-inline">
+
+        @csrf
+        @method('DELETE')
+
+        <button type="submit"
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Yakin ingin menghapus transaksi ini?')">
+            🗑 Hapus
+        </button>
+    </form>
 </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox" style="font-size:2rem;"></i><br>
-                            Belum ada data transaksi
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-    @if($transaksi->hasPages())
-    <div class="card-footer">
-        {{ $transaksi->links() }}
-    </div>
-    @endif
+@endif
+
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<div class="mt-3">
+    {{ $transaksi->links() }}
 </div>
 
 @endsection

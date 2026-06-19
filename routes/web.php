@@ -25,9 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('produk', ProdukController::class)
         ->only(['index']);
 
-    // Kasir & Admin bisa tambah transaksi
-    Route::resource('transaksi', TransaksiHarianController::class)
-        ->only(['index', 'create', 'store']);
+    Route::resource('transaksi', TransaksiHarianController::class);
 
     // Khusus admin
     Route::middleware('admin')->group(function () {
