@@ -29,12 +29,12 @@
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Produk</th>
-                        <th>Harga Pokok</th>
-                        <th>Harga Jual</th>
-                        <th>Jumlah</th>
                         <th>Total</th>
                         <th>Nota</th>
                         <th>Status</th>
+                        @if(auth()->user()->role === 'admin')
+                            <th>Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -42,11 +42,14 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d M Y') }}</td>
-                        <td class="fw-semibold">{{ $item->produk->nama_produk ?? '-' }}</td>
-                        <td class="text-danger">Rp {{ number_format($item->harga_pokok) }}</td>
-                        <td class="text-success">Rp {{ number_format($item->harga_jual) }}</td>
-                        <td>{{ $item->jumlah }}</td>
-                        <td class="fw-bold">Rp {{ number_format($item->total) }}</td>
+                        <td>
+                            @foreach($item->details as $detail)
+                                <span class="badge bg-secondary me-1">
+                                    {{ $detail->produk->nama_produk ?? '-' }} x{{ $detail->jumlah }}
+                                </span>
+                            @endforeach
+                        </td>
+                        <td class="fw-bold text-success">Rp {{ number_format($item->total) }}</td>
                         <td>
                             @if($item->bukti)
                                 <a href="{{ asset('storage/' . $item->bukti) }}" target="_blank"
@@ -58,14 +61,30 @@
                             @endif
                         </td>
                         <td>
-    <span class="badge bg-success">
-        Tersimpan
-    </span>
-</td>
+                            <span class="badge bg-success">Tersimpan</span>
+                        </td>
+                        @if(auth()->user()->role === 'admin')
+                        <td>
+                            <a href="{{ route('transaksi.edit', $item->id) }}"
+                               class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ route('transaksi.destroy', $item->id) }}"
+                                  method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Yakin hapus data ini?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                        @endif
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="{{ auth()->user()->role === 'admin' ? 7 : 6 }}"
+                            class="text-center text-muted py-4">
                             <i class="bi bi-inbox" style="font-size:2rem;"></i><br>
                             Belum ada data transaksi
                         </td>

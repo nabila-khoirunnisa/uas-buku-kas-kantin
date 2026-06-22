@@ -36,46 +36,81 @@
                        value="{{ old('tanggal_transaksi', $transaksi->tanggal_transaksi) }}">
             </div>
 
+            {{-- Tabel Produk --}}
             <div class="mb-3">
                 <label class="form-label fw-semibold">Produk</label>
-                <select name="produk_id" class="form-control" id="produkSelect"
-                        onchange="updateHarga(this)">
-                    <option value="">Pilih Produk</option>
-                    @foreach($produk as $item)
-                        <option value="{{ $item->id }}"
-                                data-harga-pokok="{{ $item->harga_pokok }}"
-                                data-harga-jual="{{ $item->harga_jual }}"
-                                {{ $transaksi->produk_id == $item->id ? 'selected' : '' }}>
-                            {{ $item->nama_produk }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-semibold">Harga Pokok</label>
-                    <input type="text" id="harga_pokok" class="form-control" readonly
-                           value="Rp {{ number_format($transaksi->harga_pokok) }}">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="tabel-produk">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Produk</th>
+                                <th>Harga Pokok</th>
+                                <th>Harga Jual</th>
+                                <th>Jumlah</th>
+                                <th>Subtotal</th>
+                                <th>
+                                    <button type="button" class="btn btn-sm btn-success"
+                                            onclick="tambahBaris()">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-produk">
+                            @foreach($transaksi->details as $detail)
+                            <tr>
+                                <td>
+                                    <select name="produk_id[]" class="form-control produk-select"
+                                            onchange="updateBaris(this)">
+                                        <option value="">Pilih Produk</option>
+                                        @foreach($produk as $item)
+                                            <option value="{{ $item->id }}"
+                                                    data-harga-pokok="{{ $item->harga_pokok }}"
+                                                    data-harga-jual="{{ $item->harga_jual }}"
+                                                    {{ $detail->produk_id == $item->id ? 'selected' : '' }}>
+                                                {{ $item->nama_produk }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control harga-pokok" readonly
+                                           value="Rp {{ number_format($detail->harga_pokok) }}">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control harga-jual" readonly
+                                           value="Rp {{ number_format($detail->harga_jual) }}">
+                                </td>
+                                <td>
+                                    <input type="number" name="jumlah[]" class="form-control jumlah"
+                                           min="1" value="{{ $detail->jumlah }}"
+                                           oninput="updateSubtotal(this)">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control subtotal" readonly
+                                           value="Rp {{ number_format($detail->subtotal) }}">
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            onclick="hapusBaris(this)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Total</td>
+                                <td colspan="2">
+                                    <input type="text" id="total-keseluruhan"
+                                           class="form-control fw-bold" readonly
+                                           value="Rp {{ number_format($transaksi->total) }}">
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-semibold">Harga Jual</label>
-                    <input type="text" id="harga_jual" class="form-control" readonly
-                           value="Rp {{ number_format($transaksi->harga_jual) }}">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Jumlah</label>
-                <input type="number" name="jumlah" class="form-control" min="1"
-                       value="{{ old('jumlah', $transaksi->jumlah) }}"
-                       onchange="updateTotal()" oninput="updateTotal()">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Total</label>
-                <input type="text" id="total_display" class="form-control" readonly
-                       value="Rp {{ number_format($transaksi->total) }}">
             </div>
 
             <div class="mb-3">
@@ -107,28 +142,85 @@
 </div>
 
 <script>
-function updateHarga(select) {
-    const option = select.options[select.selectedIndex];
-    const hargaPokok = option.dataset.hargaPokok || '';
-    const hargaJual = option.dataset.hargaJual || '';
+const produkData = {};
+@foreach($produk as $p)
+produkData[{{ $p->id }}] = {
+    id: {{ $p->id }},
+    nama_produk: "{{ $p->nama_produk }}",
+    harga_pokok: {{ $p->harga_pokok }},
+    harga_jual: {{ $p->harga_jual }}
+};
+@endforeach
 
-    document.getElementById('harga_pokok').value = hargaPokok
-        ? 'Rp ' + parseInt(hargaPokok).toLocaleString('id-ID') : '';
-    document.getElementById('harga_jual').value = hargaJual
-        ? 'Rp ' + parseInt(hargaJual).toLocaleString('id-ID') : '';
+function tambahBaris() {
+    const tbody = document.getElementById('body-produk');
+    const template = `
+        <tr>
+            <td>
+                <select name="produk_id[]" class="form-control produk-select" onchange="updateBaris(this)">
+                    <option value="">Pilih Produk</option>
+                    ${Object.values(produkData).map(p =>
+                        `<option value="${p.id}" data-harga-pokok="${p.harga_pokok}" data-harga-jual="${p.harga_jual}">${p.nama_produk}</option>`
+                    ).join('')}
+                </select>
+            </td>
+            <td><input type="text" class="form-control harga-pokok" readonly></td>
+            <td><input type="text" class="form-control harga-jual" readonly></td>
+            <td><input type="number" name="jumlah[]" class="form-control jumlah" min="1" value="1" oninput="updateSubtotal(this)"></td>
+            <td><input type="text" class="form-control subtotal" readonly></td>
+            <td><button type="button" class="btn btn-sm btn-danger" onclick="hapusBaris(this)"><i class="bi bi-trash"></i></button></td>
+        </tr>`;
+    tbody.insertAdjacentHTML('beforeend', template);
+}
 
+function hapusBaris(btn) {
+    const tbody = document.getElementById('body-produk');
+    if (tbody.rows.length > 1) {
+        btn.closest('tr').remove();
+        updateTotal();
+    }
+}
+
+function updateBaris(select) {
+    const row = select.closest('tr');
+    const id = select.value;
+
+    if (id && produkData[id]) {
+        const p = produkData[id];
+        row.querySelector('.harga-pokok').value = 'Rp ' + parseInt(p.harga_pokok).toLocaleString('id-ID');
+        row.querySelector('.harga-jual').value = 'Rp ' + parseInt(p.harga_jual).toLocaleString('id-ID');
+    } else {
+        row.querySelector('.harga-pokok').value = '';
+        row.querySelector('.harga-jual').value = '';
+        row.querySelector('.subtotal').value = '';
+    }
+    updateSubtotal(row.querySelector('.jumlah'));
+}
+
+function updateSubtotal(input) {
+    const row = input.closest('tr');
+    const select = row.querySelector('.produk-select');
+    const id = select.value;
+    const jumlah = parseInt(input.value) || 0;
+
+    if (id && produkData[id]) {
+        const subtotal = produkData[id].harga_jual * jumlah;
+        row.querySelector('.subtotal').value = 'Rp ' + subtotal.toLocaleString('id-ID');
+    }
     updateTotal();
 }
 
 function updateTotal() {
-    const select = document.getElementById('produkSelect');
-    const option = select.options[select.selectedIndex];
-    const hargaJual = parseFloat(option.dataset.hargaJual) || 0;
-    const jumlah = parseInt(document.querySelector('[name=jumlah]').value) || 0;
-    const total = hargaJual * jumlah;
-
-    document.getElementById('total_display').value = total
-        ? 'Rp ' + total.toLocaleString('id-ID') : '';
+    let total = 0;
+    document.querySelectorAll('#body-produk tr').forEach(row => {
+        const select = row.querySelector('.produk-select');
+        const jumlah = parseInt(row.querySelector('.jumlah').value) || 0;
+        const id = select ? select.value : '';
+        if (id && produkData[id]) {
+            total += produkData[id].harga_jual * jumlah;
+        }
+    });
+    document.getElementById('total-keseluruhan').value = 'Rp ' + total.toLocaleString('id-ID');
 }
 </script>
 

@@ -8,16 +8,12 @@ class TransaksiHarian extends Model
 {
     protected $fillable = [
         'tanggal_transaksi',
-        'produk_id',
-        'harga_pokok',
-        'harga_jual',
-        'jumlah',
         'total',
         'bukti',
     ];
 
-    public function produk()
+    public function details()
     {
-        return $this->belongsTo(Produk::class);
+        return $this->hasMany(DetailTransaksi::class, 'transaksi_harian_id');
     }
 }

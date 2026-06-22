@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('produk', ProdukController::class)
         ->only(['index']);
 
-    // Kasir & Admin bisa tambah transaksi
+    // Kasir & Admin bisa lihat dan tambah transaksi
     Route::resource('transaksi', TransaksiHarianController::class)
         ->only(['index', 'create', 'store']);
 
@@ -37,6 +37,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('produk', ProdukController::class)
             ->except(['index']);
+
+        // Admin bisa edit & hapus transaksi
+        Route::resource('transaksi', TransaksiHarianController::class)
+            ->only(['edit', 'update', 'destroy']);
     });
 
     // Profile
