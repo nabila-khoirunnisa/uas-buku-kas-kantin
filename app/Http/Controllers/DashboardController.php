@@ -9,20 +9,22 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     public function index()
-    {
-        $jumlah_transaksi = TransaksiHarian::count();
-        $pendapatan = TransaksiHarian::sum('total');
-        $hpp = DetailTransaksi::selectRaw('SUM(harga_pokok * jumlah) as total_hpp')
-                    ->value('total_hpp') ?? 0;
+{
+    $jumlah_transaksi = TransaksiHarian::count();
+    $pendapatan = TransaksiHarian::sum('total');
+    $hpp = DetailTransaksi::selectRaw('SUM(harga_pokok * jumlah) as total_hpp')
+                ->value('total_hpp') ?? 0;
 
-        $kas = $pendapatan;
-        $keuntungan = $pendapatan - $hpp;
+    $kas = $pendapatan;
+    $keuntungan = $pendapatan - $hpp;
+    $produk = \App\Models\Produk::orderBy('nama_produk')->get();
 
-        return view('dashboard', compact(
-            'kas',
-            'jumlah_transaksi',
-            'pendapatan',
-            'keuntungan'
-        ));
+    return view('dashboard', compact(
+        'kas',
+        'jumlah_transaksi',
+        'pendapatan',
+        'keuntungan',
+        'produk'
+    ));
     }
 }

@@ -109,6 +109,7 @@
 </div>
 
 <script>
+    
 const produkData = {};
 @foreach($produk as $p)
 produkData[{{ $p->id }}] = {
